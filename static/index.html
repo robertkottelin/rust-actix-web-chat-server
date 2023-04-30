@@ -3,40 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-    </style>
+    <title>WebSocket Test</title>
 </head>
 <body>
-    <h1>Chat App</h1>
-    <div id="messages"></div>
-    <form id="send-message-form">
-        <input type="text" id="user" placeholder="Your name" required>
-        <input type="text" id="message" placeholder="Type your message" required>
-        <button type="submit">Send</button>
-    </form>
-
+    <h1>WebSocket Test</h1>
+    <button onclick="sendMessage()">Send Message</button>
     <script>
-        const messagesDiv = document.getElementById('messages');
-        const form = document.getElementById('send-message-form');
+        const socket = new WebSocket('ws://127.0.0.1:8080/ws/');
 
-        const ws = new WebSocket(`ws://${location.host}/ws`);
-
-        ws.addEventListener('message', (event) => {
-            const message = event.data;
-            messagesDiv.innerHTML += `<p>${message}</p>`;
+        socket.addEventListener('open', (event) => {
+            console.log('WebSocket is open:', event);
         });
 
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const user = document.getElementById('user').value;
-            const message = document.getElementById('message').value;
-
-            ws.send(`${user}: ${message}`);
+        socket.addEventListener('message', (event) => {
+            console.log('WebSocket message received:', event.data);
         });
+
+        socket.addEventListener('close', (event) => {
+            console.log('WebSocket is closed:', event);
+        });
+
+        socket.addEventListener('error', (event) => {
+            console.error('WebSocket error:', event);
+        });
+
+        function sendMessage() {
+            const message = 'Hello from the client!';
+            socket.send(message);
+            console.log(`Sent message: ${message}`);
+        }
     </script>
 </body>
 </html>
