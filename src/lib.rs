@@ -5,6 +5,7 @@ use actix_web::{web, App, HttpResponse, HttpServer};
 use serde::{Deserialize, Serialize};
 use std::net::TcpListener;
 use std::sync::{Arc, Mutex};
+use tracing;
 
 type MessageMap = Arc<Mutex<std::collections::HashMap<String, String>>>;
 
@@ -24,6 +25,14 @@ async fn post_message(
 ) -> HttpResponse {
     let mut map = message_map.lock().unwrap();
     map.insert(send_message.user.clone(), send_message.message.clone());
+
+    // Log the received message
+    tracing::info!(
+        "Received message from {}: {}",
+        send_message.user,
+        send_message.message
+    );
+
     HttpResponse::Ok().body(format!(
         "Message from {}: {}",
         send_message.user, send_message.message
@@ -32,10 +41,14 @@ async fn post_message(
 
 async fn read_messages(message_map: web::Data<MessageMap>) -> HttpResponse {
     let map = message_map.lock().unwrap();
+
     let messages: Vec<String> = map
         .iter()
         .map(|(user, message)| format!("{}: {}", user, message))
         .collect();
+
+    // Log the messages being read
+    tracing::info!("Messages read: {:?}", messages);
 
     HttpResponse::Ok().json(messages)
 }
