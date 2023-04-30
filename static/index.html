@@ -1,0 +1,51 @@
+<!-- static/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat App</h1>
+    <div id="messages"></div>
+    <form id="send-message-form">
+        <input type="text" id="user" placeholder="Your name" required>
+        <input type="text" id="message" placeholder="Type your message" required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const form = document.getElementById('send-message-form');
+
+        async function fetchMessages() {
+            const response = await fetch('/read');
+            const messages = await response.json();
+            messagesDiv.innerHTML = messages.map(msg => `<p>${msg}</p>`).join('');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('user').value;
+            const message = document.getElementById('message').value;
+
+            await fetch('/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user, message }),
+            });
+
+            fetchMessages();
+        });
+
+        fetchMessages();
+    </script>
+</body>
+</html>

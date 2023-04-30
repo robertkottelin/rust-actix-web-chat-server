@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::net::TcpListener;
 use std::sync::{Arc, Mutex};
 use tracing;
+use actix_files::Files;
+
 
 type MessageMap = Arc<Mutex<std::collections::HashMap<String, String>>>;
 
@@ -62,6 +64,7 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
             .route("/health_check", web::get().to(health_check))
             .route("/send", web::post().to(post_message))
             .route("/read", web::get().to(read_messages))
+            .service(Files::new("/", "./static").index_file("index.html"))
     })
     .listen(listener)?
     .run();
