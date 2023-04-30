@@ -1,5 +1,3 @@
-<!-- static/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,27 +23,20 @@
         const messagesDiv = document.getElementById('messages');
         const form = document.getElementById('send-message-form');
 
-        async function fetchMessages() {
-            const response = await fetch('/read');
-            const messages = await response.json();
-            messagesDiv.innerHTML = messages.map(msg => `<p>${msg}</p>`).join('');
-        }
+        const ws = new WebSocket(`ws://${location.host}/ws`);
 
-        form.addEventListener('submit', async (e) => {
+        ws.addEventListener('message', (event) => {
+            const message = event.data;
+            messagesDiv.innerHTML += `<p>${message}</p>`;
+        });
+
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
             const user = document.getElementById('user').value;
             const message = document.getElementById('message').value;
 
-            await fetch('/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user, message }),
-            });
-
-            fetchMessages();
+            ws.send(`${user}: ${message}`);
         });
-
-        fetchMessages();
     </script>
 </body>
 </html>
